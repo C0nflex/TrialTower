@@ -41,7 +41,7 @@ public class PlayerController2D : MonoBehaviour
 
 	void FixedUpdate()
 	{
-		Debug.Log(Input.mousePosition);
+		//Debug.Log(Input.mousePosition);
 		// Move our character
 		MovementSystem.Move(SpringTimerDuration);
 		SpringTimerDuration = 0f;

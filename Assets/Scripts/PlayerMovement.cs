@@ -6,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
 	//[Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;  // How much to smooth out the movement
 	[SerializeField] private LayerMask m_WhatIsGround;                          // A mask determining what is ground to the character
 	[SerializeField] private Transform m_GroundCheck;                           // A position marking where to check if the player is grounded.
+	private float KeepXVelocity;
 	//[SerializeField] private Transform m_CeilingCheck;                          // A position marking where to check for ceilings
 
 
@@ -42,32 +43,40 @@ public class PlayerMovement : MonoBehaviour
 
 	private void FixedUpdate()
 	{
+		if(m_Rigidbody2D.velocity.x == 0)
+			m_Rigidbody2D.velocity = new Vector2(KeepXVelocity, m_Rigidbody2D.velocity.y);
 		Inairlastupdate = !m_Grounded;
 		m_Grounded = false;
 		// The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
 		// This can be done using layers instead but Sample Assets will not overwrite your project settings.
 		RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, k_GroundedRadius, m_WhatIsGround);
-		RaycastHit2D hit2;  //to check for right k_GroundedRadius parameter.
-		float orgi = 0.001f;
-		float i = 0;
-		do
-		{
-			i = i + orgi;
-			hit2 = Physics2D.Raycast(transform.position, -Vector2.up, k_GroundedRadius + i, m_WhatIsGround);
-		} while (hit2.collider == null); 
+		RaycastHit2D lefthit = Physics2D.Raycast(transform.position, (Vector2.down + Vector2.left).normalized, k_GroundedRadius * 2, m_WhatIsGround);
+		RaycastHit2D righthit = Physics2D.Raycast(transform.position, (Vector2.down + Vector2.right).normalized, k_GroundedRadius * 2, m_WhatIsGround);
+		RaycastHit2D left = Physics2D.Raycast(transform.position, Vector2.left, k_GroundedRadius * 2, m_WhatIsGround);
+		RaycastHit2D right = Physics2D.Raycast(transform.position, Vector2.right, k_GroundedRadius * 2, m_WhatIsGround);
 		//Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround);
-		if (hit.collider != null)
+		if (hit.collider != null || 
+			(lefthit.collider != null && left.collider == null && right.collider == null) || 
+			(righthit.collider !=null && left.collider == null && right.collider == null))
         {
 			m_Grounded = true;
 		}
 		if (m_Grounded & Inairlastupdate)
+		{
 			StickLanding();
+			KeepXVelocity = 0;
+		}
 		if (!m_Grounded)
 		{
-			if (transform.position.x > CloseToRightWall)
+			RaycastHit2D hitCeiling = Physics2D.Raycast(transform.position, Vector2.up, k_GroundedRadius * 2, m_WhatIsGround);
+			RaycastHit2D leftCeiling = Physics2D.Raycast(transform.position, (Vector2.up + Vector2.left).normalized, k_GroundedRadius * 2, m_WhatIsGround);
+			RaycastHit2D rightCeiling = Physics2D.Raycast(transform.position, (Vector2.up + Vector2.right).normalized, k_GroundedRadius * 2, m_WhatIsGround);
+			if (left.collider != null || leftCeiling.collider != null)
 				CloseToWall(Vector2.left);
-			if (transform.position.x < CloseToLeftWall)
+			if (right.collider != null || rightCeiling.collider != null)
 				CloseToWall(Vector2.right);
+			if (hitCeiling.collider != null)
+				CloseToWall(Vector2.up);
 		}
 
 	
@@ -100,6 +109,7 @@ public class PlayerMovement : MonoBehaviour
 		Vector2 direction = Camera.main.ScreenToWorldPoint(Input.mousePosition) - gameObject.transform.position;
 		direction.Normalize(); //makes it so it only applies direction and no additional force (thats what we want).
 		m_Rigidbody2D.AddForce(direction * (HoldJumpDuration + JumpVectorOffset) * JumpVectorMultiplayer, ForceMode2D.Impulse);
+		KeepXVelocity = m_Rigidbody2D.velocity.x;
 	}
 
 	public void StickLanding()
@@ -110,8 +120,13 @@ public class PlayerMovement : MonoBehaviour
 
 	public void CloseToWall(Vector2 inNormal)
     {
-		m_Rigidbody2D.velocity = Vector2.Reflect(m_Rigidbody2D.velocity, inNormal);
-    }
+		if (inNormal.y == 0 && ((inNormal.x <= 0 && m_Rigidbody2D.velocity.x >= 0) || (inNormal.x >= 0 && m_Rigidbody2D.velocity.x <= 0)) ||
+			(inNormal.x == 0 && ((inNormal.y <= 0 && m_Rigidbody2D.velocity.y >= 0) || (inNormal.y >= 0 && m_Rigidbody2D.velocity.y <= 0))))
+			return; 
+		Vector2 temp = Vector2.Reflect(m_Rigidbody2D.velocity, inNormal);
+		KeepXVelocity = temp.x;
+		m_Rigidbody2D.velocity = new Vector2(KeepXVelocity, temp.y);
+	}
 
 	/*private void Flip()
 	{

@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class CameraMovement : MonoBehaviour
 {
-    public float MaxPlayerAboveCamera = 1f;
-    public float CameraMovementSpeedInSeconds = 1f;
+    public float MaxPlayerAboveCamera = 100f;
+    //public float CameraMovementSpeedInSeconds = 10f;
     public Transform PlayerLocation;
     public PlayerMovement playermovement;
+    public float IncreasedCameraSpeed;
 
     private float MinHeightToStartMoving = -2f;
     private bool StartMoving = false;
@@ -20,12 +21,19 @@ public class CameraMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!StartMoving && PlayerLocation.position.y > MinHeightToStartMoving && playermovement.m_Grounded == true)
+
+    }
+
+    private void FixedUpdate()
+    {
+        gameObject.transform.position = new Vector3(gameObject.transform.position.x, PlayerLocation.position.y + MaxPlayerAboveCamera, gameObject.transform.position.z);
+        /*if (!StartMoving && PlayerLocation.position.y > MinHeightToStartMoving && playermovement.m_Grounded == true)
             StartMoving = true;
-        if(StartMoving)
-            gameObject.transform.position += new Vector3(0, Time.deltaTime, 0);
-        //if (PlayerLocation.position.y > gameObject.transform.position.y + CameraMovementSpeedInSeconds)
-        //gameObject.transform.position = new Vector3(gameObject.transform.position.x, PlayerLocation.position.y + CameraMovementSpeedInSeconds, gameObject.transform.position.z);
-        //else
+        if (PlayerLocation.position.y > gameObject.transform.position.y + MaxPlayerAboveCamera)
+            IncreasedCameraSpeed = 10;
+        else
+            IncreasedCameraSpeed = 1;
+        if (StartMoving)
+            gameObject.transform.position += new Vector3(0, Time.deltaTime * IncreasedCameraSpeed, 0); */
     }
 }
