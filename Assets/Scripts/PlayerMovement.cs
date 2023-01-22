@@ -7,31 +7,33 @@ public class PlayerMovement : MonoBehaviour
 	[SerializeField] private LayerMask m_WhatIsGround;                          // A mask determining what is ground to the character
 	[SerializeField] private Transform m_GroundCheck;                           // A position marking where to check if the player is grounded.
 	private float KeepXVelocity;
+	private float AdjustPositionWhenOnEdge = .1f;
 	//[SerializeField] private Transform m_CeilingCheck;                          // A position marking where to check for ceilings
 
 
-	const float k_GroundedRadius = .35f; // Radius of the overlap circle to determine if grounded
+	const float k_GroundedRadius = .3f; // Radius of the overlap circle to determine if grounded
 	public bool m_Grounded;
-	private bool Inairlastupdate;   // Whether or not the player is grounded.
-	//const float k_CeilingRadius = .2f; // Radius of the overlap circle to determine if the player can stand up
+	public bool Inairlastupdate;   // Whether or not the player is grounded.
+								   //const float k_CeilingRadius = .2f; // Radius of the overlap circle to determine if the player can stand up
 	private Rigidbody2D m_Rigidbody2D;
 	//private bool m_FacingRight = false;  // For determining which way the player is currently facing.
 	//private Vector3 velocity = Vector3.zero; 
-    //private Animator animator;
+	//private Animator animator;
 
 	private float JumpVectorMultiplayer = 10f;
-	private float JumpVectorOffset =1f;
+	private float JumpVectorOffset = 1f;
 	private float MaxHoldDownDuration = 100000000000f;
 
 	public float CloseToRightWall = 7.7f;
 	public float CloseToLeftWall = -7.7f;
+	private float LastFrameX;
 
 
 	private void Start()
 	{
 		//animator = gameObject.GetComponent<Animator>();
 		//if (animator == null)
-			//Debug.Log("PlayerBehavior cant find Animator");
+		//Debug.Log("PlayerBehavior cant find Animator");
 		m_Grounded = false;
 	}
 
@@ -43,8 +45,9 @@ public class PlayerMovement : MonoBehaviour
 
 	private void FixedUpdate()
 	{
-		if(m_Rigidbody2D.velocity.x == 0)
-			m_Rigidbody2D.velocity = new Vector2(KeepXVelocity, m_Rigidbody2D.velocity.y);
+		/*if(m_Rigidbody2D.velocity.x == 0 && LastFrameX > 0.1f)
+			m_Rigidbody2D.velocity = new Vector2(KeepXVelocity, m_Rigidbody2D.velocity.y); */
+
 		Inairlastupdate = !m_Grounded;
 		m_Grounded = false;
 		// The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
@@ -55,16 +58,17 @@ public class PlayerMovement : MonoBehaviour
 		RaycastHit2D left = Physics2D.Raycast(transform.position, Vector2.left, k_GroundedRadius * 2, m_WhatIsGround);
 		RaycastHit2D right = Physics2D.Raycast(transform.position, Vector2.right, k_GroundedRadius * 2, m_WhatIsGround);
 		//Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround);
-		if (hit.collider != null || 
-			(lefthit.collider != null && left.collider == null && right.collider == null) || 
-			(righthit.collider !=null && left.collider == null && right.collider == null))
-        {
+		if (hit.collider != null ||
+			(lefthit.collider != null && left.collider == null) ||
+			(righthit.collider != null && right.collider == null))
+		{
 			m_Grounded = true;
 		}
 		if (m_Grounded & Inairlastupdate)
 		{
 			StickLanding();
 			KeepXVelocity = 0;
+			m_Rigidbody2D.simulated = false;
 		}
 		if (!m_Grounded)
 		{
@@ -78,9 +82,10 @@ public class PlayerMovement : MonoBehaviour
 			if (hitCeiling.collider != null)
 				CloseToWall(Vector2.up);
 		}
+		LastFrameX = m_Rigidbody2D.velocity.x;
 
-	
-			
+
+
 		/*for (int i = 0; i < colliders.Length; i++)
 		{
 			if (colliders[i].gameObject != gameObject)
@@ -105,7 +110,8 @@ public class PlayerMovement : MonoBehaviour
 			return;
 		if (HoldJumpDuration > MaxHoldDownDuration)
 			HoldJumpDuration = MaxHoldDownDuration;
-		
+
+		m_Rigidbody2D.simulated = true;
 		Vector2 direction = Camera.main.ScreenToWorldPoint(Input.mousePosition) - gameObject.transform.position;
 		direction.Normalize(); //makes it so it only applies direction and no additional force (thats what we want).
 		m_Rigidbody2D.AddForce(direction * (HoldJumpDuration + JumpVectorOffset) * JumpVectorMultiplayer, ForceMode2D.Impulse);
@@ -113,19 +119,24 @@ public class PlayerMovement : MonoBehaviour
 	}
 
 	public void StickLanding()
-    {
+	{
 		m_Rigidbody2D.velocity = Vector2.zero;
 		m_Rigidbody2D.angularVelocity = 0f;
 	}
 
 	public void CloseToWall(Vector2 inNormal)
-    {
+	{
 		if (inNormal.y == 0 && ((inNormal.x <= 0 && m_Rigidbody2D.velocity.x >= 0) || (inNormal.x >= 0 && m_Rigidbody2D.velocity.x <= 0)) ||
 			(inNormal.x == 0 && ((inNormal.y <= 0 && m_Rigidbody2D.velocity.y >= 0) || (inNormal.y >= 0 && m_Rigidbody2D.velocity.y <= 0))))
-			return; 
+			return;
 		Vector2 temp = Vector2.Reflect(m_Rigidbody2D.velocity, inNormal);
 		KeepXVelocity = temp.x;
 		m_Rigidbody2D.velocity = new Vector2(KeepXVelocity, temp.y);
+	}
+
+	public void GameOver()
+    {
+		m_Rigidbody2D.simulated = false;
 	}
 
 	/*private void Flip()

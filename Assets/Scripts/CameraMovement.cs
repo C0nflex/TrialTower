@@ -27,6 +27,7 @@ public class CameraMovement : MonoBehaviour
     private void FixedUpdate()
     {
         gameObject.transform.position = new Vector3(gameObject.transform.position.x, PlayerLocation.position.y + MaxPlayerAboveCamera, gameObject.transform.position.z);
+
         /*if (!StartMoving && PlayerLocation.position.y > MinHeightToStartMoving && playermovement.m_Grounded == true)
             StartMoving = true;
         if (PlayerLocation.position.y > gameObject.transform.position.y + MaxPlayerAboveCamera)
