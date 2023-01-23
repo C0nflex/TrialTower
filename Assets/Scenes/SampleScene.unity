@@ -162,6 +162,8 @@ MonoBehaviour:
   Inairlastupdate: 0
   CloseToRightWall: 7.7
   CloseToLeftWall: -7.7
+  IDOfLastPlatform: 0
+  canvasHandler: {fileID: 2083712090}
 --- !u!114 &264328530
 MonoBehaviour:
   m_ObjectHideFlags: 0

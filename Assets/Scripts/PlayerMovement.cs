@@ -28,6 +28,9 @@ public class PlayerMovement : MonoBehaviour
 	public float CloseToLeftWall = -7.7f;
 	private float LastFrameX;
 
+	public int IDOfLastPlatform;
+	public CanvasHandler canvasHandler;
+
 
 	private void Start()
 	{
@@ -69,6 +72,13 @@ public class PlayerMovement : MonoBehaviour
 			StickLanding();
 			KeepXVelocity = 0;
 			m_Rigidbody2D.simulated = false;
+			if (hit.collider != null)
+				IDOfLastPlatform = hit.collider.transform.parent.GetComponent<PlatformID>().ID;
+			else if (lefthit.collider != null && left.collider == null)
+				IDOfLastPlatform = lefthit.collider.transform.parent.GetComponent<PlatformID>().ID;
+			else if (righthit.collider != null && right.collider == null)
+				IDOfLastPlatform = righthit.collider.transform.parent.GetComponent<PlatformID>().ID;
+			canvasHandler.UpdateScore(IDOfLastPlatform);
 		}
 		if (!m_Grounded)
 		{

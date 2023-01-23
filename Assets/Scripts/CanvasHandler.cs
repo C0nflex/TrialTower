@@ -13,7 +13,7 @@ public class CanvasHandler : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        ScoreText.text = "Score: 1";
     }
 
     // Update is called once per frame
@@ -21,5 +21,10 @@ public class CanvasHandler : MonoBehaviour
     {
         GameOverText.transform.position = new Vector3(Camera.transform.position.x, Camera.transform.position.y, -1);
         ScoreText.transform.position = new Vector3(Camera.transform.position.x, Camera.transform.position.y, -1) + ScoreCameraOffset;
+    }
+
+    public void UpdateScore(int UpdatedScore)
+    {
+        ScoreText.text = "Score: " + UpdatedScore;
     }
 }

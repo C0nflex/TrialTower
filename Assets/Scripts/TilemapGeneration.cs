@@ -24,6 +24,8 @@ public class TilemapGeneration : MonoBehaviour
     private Stack<Vector3> DeletedPlatforms = new Stack<Vector3>();
     private LinkedListNode<Vector3> OldestActivePlatformPos;
     private LinkedListNode<Vector3> NewestActivePlatformPos;
+    private int NewestActiveID;
+    private int OldestActiveID;
     private LinkedList<Vector3> AllPlatformsPos = new LinkedList<Vector3>();
     private LinkedList<int> AllPlatformSize = new LinkedList<int>();
     private LinkedListNode<int> OldestSize;
@@ -33,15 +35,18 @@ public class TilemapGeneration : MonoBehaviour
     private int WallRendererOutDist = 60;
     private GameObject destroy;
     private GameObject newPlatform;
-
     private int XOffset = 13;
     private int YOffset = -5;
+    private int NextID = 0;
 
     private Vector3 PosToSummon;
     // Start is called before the first frame update
     void Start()
     {
         newPlatform = Instantiate(Floor);
+        newPlatform.AddComponent<PlatformID>();
+        newPlatform.GetComponent<PlatformID>().ID = NextID;
+        NextID++;
         newPlatform.transform.SetParent(this.transform);
         for (int i = 1; i < 10; i++)
             SummonPlatform();
@@ -55,6 +60,8 @@ public class TilemapGeneration : MonoBehaviour
         NewestActivePlatformPos = AllPlatformsPos.Last;
         OldestSize = AllPlatformSize.First;
         NewestSize = AllPlatformSize.Last;
+        NewestActiveID = NextID - 1;
+        OldestActiveID = 0;
     }
 
     // Update is called once per frame
@@ -81,6 +88,7 @@ public class TilemapGeneration : MonoBehaviour
             else
                 destroy = platform.collider.gameObject;
             DestroyImmediate(destroy);
+            NewestActiveID--;
             if (NewestActivePlatformPos.Previous != null)
             {
                 NewestActivePlatformPos = NewestActivePlatformPos.Previous;
@@ -93,6 +101,9 @@ public class TilemapGeneration : MonoBehaviour
         {
             newPlatform = Instantiate(Platforms[NewestSize.Next.Value - 1], NewestActivePlatformPos.Next.Value, Quaternion.identity);
             newPlatform.transform.SetParent(this.transform);
+            NewestActiveID++;
+            newPlatform.AddComponent<PlatformID>();
+            newPlatform.GetComponent<PlatformID>().ID = NewestActiveID;
             NewestSize = NewestSize.Next;
             NewestActivePlatformPos = NewestActivePlatformPos.Next;
         }
@@ -109,6 +120,7 @@ public class TilemapGeneration : MonoBehaviour
             else
                 destroy = platform.collider.gameObject;
             DestroyImmediate(destroy);
+            OldestActiveID++;
             if (OldestActivePlatformPos.Next != null)
             {
                 OldestActivePlatformPos = OldestActivePlatformPos.Next;
@@ -121,6 +133,9 @@ public class TilemapGeneration : MonoBehaviour
         {
             newPlatform = Instantiate(Platforms[OldestSize.Previous.Value - 1], OldestActivePlatformPos.Previous.Value, Quaternion.identity);
             newPlatform.transform.SetParent(this.transform);
+            OldestActiveID--;
+            newPlatform.AddComponent<PlatformID>();
+            newPlatform.GetComponent<PlatformID>().ID = OldestActiveID;
             OldestSize = OldestSize.Previous;
             OldestActivePlatformPos = OldestActivePlatformPos.Previous;
         }
@@ -134,6 +149,9 @@ public class TilemapGeneration : MonoBehaviour
         PosToSummon = new Vector3(PlatformXLocation, PlatformAddHeight, 0);
         newPlatform = Instantiate(Platforms[PlatformSize - 1], PosToSummon, Quaternion.identity);
         newPlatform.transform.SetParent(this.transform);
+        newPlatform.AddComponent<PlatformID>();
+        newPlatform.GetComponent<PlatformID>().ID = NextID;
+        NextID++;
         AllPlatformsPos.AddLast(PosToSummon);
         AllPlatformSize.AddLast(PlatformSize);
         LastPlatformHeight = PlatformAddHeight;
@@ -143,6 +161,9 @@ public class TilemapGeneration : MonoBehaviour
     {
         newPlatform = Instantiate(Platforms[PlatformSize], pos, Quaternion.identity);
         newPlatform.transform.SetParent(this.transform);
+        newPlatform.AddComponent<PlatformID>();
+        newPlatform.GetComponent<PlatformID>().ID = NextID;
+        NextID++;
     }
 
     public void WallRenderer()

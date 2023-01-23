@@ -59,6 +59,7 @@
     <Compile Include="Assets\Scripts\CameraMovement.cs" />
     <Compile Include="Assets\Scripts\CanvasHandler.cs" />
     <Compile Include="Assets\Scripts\Debug\showFPS.cs" />
+    <Compile Include="Assets\Scripts\PlatformID.cs" />
     <Compile Include="Assets\Scripts\PlayerController2D.cs" />
     <Compile Include="Assets\Scripts\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\RedLineMovement.cs" />
